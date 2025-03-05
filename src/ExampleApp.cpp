@@ -139,11 +139,15 @@ void ExampleApp::onRenderGraphicsContext(const VRGraphicsState &renderState) {
     
     //TODO: Update the sphereFrame matrix to move the ball's position based on the dir variable.
     //Make the ball rotate so that it looks like it is rolling on the table.
-    
-    
-    
-    
-    
+	vec3 location = column(sphereFrame, 3);
+	location += dir;
+
+	vec3 rotationAxis = normalize(cross(vec3(0, 1, 0), dir));
+
+	mat4 rotationMatrix = rotate(mat4(1.0f), radians(1.0f), rotationAxis);
+
+	// Something is going wrong but the math seems right...
+	sphereFrame = translate(mat4(1.0f), location) * rotationMatrix * translate(mat4(1.0f), -location) * sphereFrame;
 }
 
 void ExampleApp::onRenderGraphicsScene(const VRGraphicsState &renderState) {
