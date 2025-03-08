@@ -139,15 +139,26 @@ void ExampleApp::onRenderGraphicsContext(const VRGraphicsState &renderState) {
     
     //TODO: Update the sphereFrame matrix to move the ball's position based on the dir variable.
     //Make the ball rotate so that it looks like it is rolling on the table.
-	vec3 location = column(sphereFrame, 3);
-	location += dir;
+	vec3 location = column(sphereFrame, 3); // Extract the position from the sphere's frame
+	//location += dir * 10.0f; // Update the position based on the direction
 
-	vec3 rotationAxis = normalize(cross(vec3(0, 1, 0), dir));
+	float rotationSpeed = 150; // Rotation speed in degrees
 
-	mat4 rotationMatrix = rotate(mat4(1.0f), radians(1.0f), rotationAxis);
+	mat4 changeMatrix = mat4(1.0f); // Identity matrix
 
-	// Something is going wrong but the math seems right...
-	sphereFrame = translate(mat4(1.0f), location) * rotationMatrix * translate(mat4(1.0f), -location) * sphereFrame;
+	// Combine rotations into a single matrix
+	mat4 rotation = rotate(changeMatrix, radians(dir.x * rotationSpeed), vec3(0, 0, -1)) * // X-axis rotation
+		rotate(changeMatrix, radians(dir.z * rotationSpeed), vec3(-1, 0, 0)); // Z-axis rotation
+
+	// Translate to origin, apply rotation, then translate back
+	mat4 translateToNull = translate(changeMatrix, -location);
+	mat4 translateToPos = translate(changeMatrix, location + dir);
+
+	// Compose the final transformation matrix
+	mat4 newSphereFrame = translateToPos * rotation* translateToNull * sphereFrame;
+
+	// Update the sphere's frame
+	sphereFrame = newSphereFrame;
 }
 
 void ExampleApp::onRenderGraphicsScene(const VRGraphicsState &renderState) {
